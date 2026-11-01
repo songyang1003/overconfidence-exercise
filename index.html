@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confidence Exercise</title>
+<style>
+:root{
+  --ink:#37352f; --muted:#6f6e69; --line:#e9e9e7; --hover:rgba(55,53,47,.06); --soft:#f7f6f3; --bg:#fff;
+  --n:#0b6e99; --n-bg:#ddebf1;   /* individuals */
+  --t:#0f7b6c; --t-bg:#ddedea;   /* teams */
+  --s:#6b46a8; --s-bg:#ece6f5;   /* statisticized teams */
+  --red:#c4352f; --red-bg:#fbe4e4; --accent:#2383e2;
+}
+*{box-sizing:border-box}
+html{font-size:clamp(18px,1.05vw,26px)}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.5;
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.page{max-width:1700px;margin:0 auto;padding:24px 40px 96px}
+h1{font-size:2rem;line-height:1.2;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:1.35rem;font-weight:600;margin:24px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+button{font:inherit;color:var(--ink);background:#fff;border:1px solid #d3d2ce;border-radius:4px;padding:5px 12px;cursor:pointer;line-height:1.4}
+button:hover{background:var(--hover)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 18px}
+button.primary:hover{background:#1b74cc}
+button.ghost{border-color:transparent;color:var(--muted)}
+
+#setup{max-width:900px;margin:0 auto}
+.drop{border:1px dashed #c9c8c4;border-radius:4px;padding:40px;text-align:center;color:var(--muted);cursor:pointer}
+.drop:hover,.drop.over{background:var(--soft)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+input[type=number]{font:inherit;color:var(--ink);border:1px solid #d3d2ce;border-radius:4px;padding:6px 10px;width:100%}
+.tag{display:inline-block;border-radius:3px;padding:1px 8px;font-size:.82rem;font-weight:500;line-height:1.6}
+.tag.n{background:var(--n-bg);color:var(--n)} .tag.t{background:var(--t-bg);color:var(--t)} .tag.s{background:var(--s-bg);color:var(--s)}
+.tag.red{background:var(--red-bg);color:var(--red)}
+details{border-radius:4px;margin:6px 0}
+summary{cursor:pointer;padding:6px 4px;border-radius:4px;font-weight:600}
+summary:hover{background:var(--hover)}
+details>div{padding:6px 4px 12px 22px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);font-size:.9rem}
+th{color:#4a4945;font-weight:500}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 40px;margin-top:4px}
+.col{padding-top:6px}
+#winnerDetails>summary{font-size:1.35rem}
+.cap{font-size:.82rem;color:var(--muted);margin:6px 0 0;min-height:3em}
+.big{font-size:2.6rem;font-weight:700;line-height:1.05;letter-spacing:-.02em;margin:10px 0 0;font-variant-numeric:tabular-nums}
+.col.n .big{color:var(--n)} .col.t .big{color:var(--t)} .col.s .big{color:var(--s)}
+
+.win{background:var(--t-bg);border-radius:4px;padding:14px 18px;margin:0 0 20px}
+.winners{display:flex;flex-wrap:wrap;gap:12px 48px;margin-top:6px}
+.win .team{font-size:3rem;font-weight:700;line-height:1.2;color:var(--t)}
+.win .names{margin:6px 0 0;font-size:1.1rem}
+.win .muted{font-size:1.1rem}
+.win .small.muted{font-size:.82rem}
+.note{color:var(--red);font-weight:600;font-size:.9rem;margin:10px 0 0}
+.note button{margin-left:8px;color:var(--ink);font-weight:500}
+.alert{color:var(--red);font-weight:600;margin:0 0 10px}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:inherit}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+@media (max-width:900px){.cols{grid-template-columns:1fr}.page{padding:24px 18px 60px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ================= SETUP ================= -->
+<main id="setup">
+  <h1>Confidence exercise</h1>
+
+  <h2>1. Individual survey file</h2>
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose the individual survey CSV file">
+    <span id="dropLabel">Drop the Qualtrics file here, or click</span>
+    <input type="file" id="file" accept=".csv,text/csv" hidden>
+  </div>
+  <p id="note1" class="note" role="alert" hidden></p>
+  <div class="row" style="margin-top:16px">
+    <button id="demoBtn">Use demo data</button>
+    <label class="muted" style="font-size:1rem"><input type="checkbox" id="incPrev"> Include preview and test responses</label>
+  </div>
+
+  <h2>2. Team survey file <span class="muted small">(optional)</span></h2>
+  <div class="drop" id="drop2" tabindex="0" role="button" aria-label="Choose the team survey CSV file">
+    <span id="dropLabel2">Drop the Qualtrics file here, or click</span>
+    <input type="file" id="file2" accept=".csv,text/csv" hidden>
+  </div>
+  <p id="note2" class="note" role="alert" hidden></p>
+  <div class="row" style="margin-top:16px">
+    <button id="demoBtn2">Use demo data</button>
+    <button id="clear2" class="ghost" hidden>Remove file</button>
+  </div>
+
+  <p id="goMsg" class="alert" role="alert" style="margin-top:32px" hidden></p>
+  <div class="row" style="margin-top:16px"><button class="primary" id="goBtn">Show results</button></div>
+</main>
+
+<!-- ================= RESULTS ================= -->
+<main id="results" hidden>
+  <div class="topbar">
+    <button class="ghost" id="backBtn">&larr; Setup</button>
+    <span id="demoTag" class="tag red" hidden>Demo data</span>
+  </div>
+  <p id="keyNeeded" class="alert" role="alert" hidden></p>
+  <div id="resultsBody">
+
+  <p id="previewNote" class="alert" role="alert" hidden></p>
+  <details id="winnerDetails"><summary>Winner</summary><div>
+    <div id="winner"></div>
+    <h2>Team standings</h2>
+    <div id="standings"></div>
+  </div></details>
+
+  <h1 style="margin-top:16px">Did the answer land inside our range?</h1>
+  <div class="cols" id="cards"></div>
+  <p class="small muted" style="margin:10px 0 0">Bars show how many got each number of hits out of 10. Dashed line: 9, calibrated.</p>
+
+  </div>
+
+  <h2>Details</h2>
+  <details id="keyDetails"><summary>Answer key</summary><div id="keyList"></div></details>
+  <details><summary>Hit rate by question</summary><div id="qtable"></div></details>
+</main>
+
+</div>
+
+<script src="core.js"></script>
+<script src="answer_key.js" onerror="void 0"></script>
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const COLORS = { n:'#0b6e99', t:'#0f7b6c', s:'#6b46a8' };
+const S = { records:null, records2:null, demo:false, demo2:false, keyDemo:false, savedKey:null, key:[], A:null, flags:null };
+const DROP = 'Drop the Qualtrics file here, or click';
+
+// ---------- helpers ----------
+function pct(x){ return isFinite(x) ? Math.round(x*100)+'%' : '–'; }
+
+// ---------- setup ----------
+function keyFromWindow(){ return (window.CE_KEY && window.CE_KEY.length) ? window.CE_KEY.map(k => ({label:k.label, answer:k.answer})) : null; }
+function setKey(k){ S.key = k; renderKey(); }
+function renderKey(){
+  $('#keyList').innerHTML = '<table><tbody>' + S.key.map((k,i) => '<tr><td class="muted" style="width:2rem">'+(i+1)+'</td><td>'+esc(k.label)+'</td><td style="width:11rem"><input type="number" step="any" data-k="'+i+'" value="'+(k.answer===''?'':esc(k.answer))+'" aria-label="Answer to item '+(i+1)+'"></td></tr>').join('') + '</tbody></table>';
+  document.querySelectorAll('#keyList input').forEach(inp => inp.addEventListener('input', e => { S.key[+e.target.dataset.k].answer = e.target.value; if(S.records && !$('#results').hidden) compute(); }));
+}
+function note(slot, text, retry){
+  const el = $('#note'+slot);
+  el.hidden = !text; el.textContent = text || '';
+  if(retry){ const b = document.createElement('button'); b.textContent = 'Load anyway'; b.addEventListener('click', retry); el.appendChild(b); }
+}
+function commit1(q, name, demo){
+  note(1, '');
+  if(CE.slotClash(demo, S.records2, S.demo2)){
+    clearPhase2(DROP);
+    note(2, demo ? 'The real team file was removed because demo data was loaded.' : 'Demo team data was removed because a real file was loaded.');
+  }
+  S.records = q.records; S.demo = !!demo; S.csvItems = q.nItems;
+  if(demo){ S.savedKey = CE.keyToSave(S.key, S.keyDemo, S.savedKey); setKey(S.demoKey.map(k => ({label:k.label, answer:k.answer}))); S.keyDemo = true; }
+  else {
+    const k = CE.keyForUpload(S.key, keyFromWindow(), q.nItems, S.keyDemo, S.savedKey);
+    if(k) setKey(k);
+    S.keyDemo = false; S.savedKey = null;
+  }
+  $('#dropLabel').textContent = (demo ? 'Demo data' : name) + ', ' + q.records.length + ' responses';
+  $('#goMsg').textContent = '';
+}
+function loadText(text, name, demo){
+  const q = CE.readQualtrics(text), code = demo ? '' : CE.checkPhase1(q), act = CE.fileAction(code), p = CE.perTeam(q.records);
+  if(act === 'load') commit1(q, name, demo);
+  else if(act === 'reject') note(1, name+' is not the individual survey (it needs team_num, ind_name, and est columns).');
+  else note(1, name+' has '+p.rows+' rows in '+p.teams+' teams, so it looks like the team survey.', () => commit1(q, name, false));
+}
+function readFile(f, cb){ const r = new FileReader(); r.onload = () => cb(String(r.result), f.name); r.readAsText(f); }
+function clearPhase2(label){ S.records2 = null; S.demo2 = false; $('#clear2').hidden = true; $('#dropLabel2').textContent = label; }
+function commit2(q, name, demo){
+  note(2, '');
+  if(CE.slotClash(demo, S.records, S.demo)){
+    S.records = null; S.demo = false; $('#dropLabel').textContent = DROP;
+    note(1, demo ? 'The real individual file was removed because demo data was loaded.' : 'Demo individual data was removed because a real file was loaded. Load the individual survey file.');
+  }
+  S.records2 = q.records; S.demo2 = !!demo; S.csvItems2 = q.nItems;
+  $('#dropLabel2').textContent = (demo ? 'Demo data' : name)+', '+q.records.length+' team responses';
+  $('#clear2').hidden = false;
+}
+function loadText2(text, name, demo){
+  const q = CE.readQualtrics(text), code = demo ? '' : CE.checkPhase2(q), act = CE.fileAction(code), p = CE.perTeam(q.records);
+  if(act === 'load') commit2(q, name, demo);
+  else if(act === 'reject') note(2, name+' is not the team survey (it needs team_num and est columns).');
+  else note(2, name+' has '+p.rows+' rows in '+p.teams+' teams, more than expected. If loaded, the latest row per team is kept.', () => commit2(q, name, false));
+}
+
+['dragover','drop'].forEach(ev => window.addEventListener(ev, e => e.preventDefault()));
+function wire(drop, file, cb){
+  $(drop).addEventListener('click', () => $(file).click());
+  $(drop).addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $(file).click(); } });
+  $(file).addEventListener('change', e => { const f = e.target.files[0]; if(f) readFile(f, cb); e.target.value = ''; });
+  ['dragover','dragenter'].forEach(ev => $(drop).addEventListener(ev, e => { e.preventDefault(); $(drop).classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => $(drop).addEventListener(ev, e => { e.preventDefault(); $(drop).classList.remove('over'); }));
+  $(drop).addEventListener('drop', e => { if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0], cb); });
+}
+wire('#drop', '#file', (t, n) => loadText(t, n, false));
+wire('#drop2', '#file2', (t, n) => loadText2(t, n, false));
+$('#clear2').addEventListener('click', () => { clearPhase2(DROP); note(2, ''); });
+function demoKey(){ S.demoKey = CE.withSd(keyFromWindow() || CE.DEMO_KEY); return S.demoKey; }
+function loadDemo1(){ loadText(CE.demoCSV(27708, demoKey()), 'demo', true); }
+function loadDemo2(){ loadText2(CE.demoPhase2CSV(27708, demoKey()), 'demo', true); }
+function loadDemo(){ loadDemo1(); loadDemo2(); }
+$('#demoBtn').addEventListener('click', loadDemo1);
+$('#demoBtn2').addEventListener('click', loadDemo2);
+
+$('#goBtn').addEventListener('click', () => {
+  const fail = msg => { const m = $('#goMsg'); m.textContent = msg; m.hidden = false; m.scrollIntoView({block:'center'}); };
+  $('#goMsg').hidden = true;
+  if(!S.records){ fail('Load the individual survey file first (step 1).'); return; }
+  compute();
+  if(S.A && !S.A.agg.ind.n){ fail('No usable responses in the individual survey file.'); return; }
+  $('#winnerDetails').open = false; show('results');
+});
+$('#backBtn').addEventListener('click', () => show('setup'));
+function show(which){ $('#setup').hidden = which !== 'setup'; $('#results').hidden = which !== 'results'; window.scrollTo(0,0); }
+
+// ---------- compute ----------
+function keyMissing(){ return S.key.map((k,i) => (!isFinite(parseFloat(k.answer)) || String(k.answer).trim()==='') ? i+1 : 0).filter(Boolean); }
+function clearDetails(){
+  const msg = '<p class="muted">Enter the full answer key to see this.</p>';
+  $('#qtable').innerHTML = msg;
+}
+function compute(){
+  $('#demoTag').hidden = !(S.demo || S.demo2);
+  const miss = keyMissing(), kn = $('#keyNeeded');
+  $('#resultsBody').hidden = !!miss.length; kn.hidden = !miss.length;
+  if(miss.length){ kn.textContent = 'Enter the answer for item'+(miss.length>1?'s ':' ')+miss.join(', ')+' in the answer key below.'; $('#keyDetails').open = true; S.keyWasMissing = true; S.A = null; clearDetails(); return; }
+  if(S.keyWasMissing && !$('#keyList').contains(document.activeElement)){ $('#keyDetails').open = false; S.keyWasMissing = false; }
+  const truth = S.key.map(k => Number(k.answer));
+  const b = CE.buildRespondents(S.records, truth.length, {includePreview: $('#incPrev').checked});
+  const b2 = S.records2 ? CE.buildTeamSubs(S.records2, truth.length, {includePreview: $('#incPrev').checked}) : null;
+  S.flags = b.flags; S.flags2 = b2 && b2.flags; S.A = CE.analyze(b.resps, truth, b2 && b2.subs);
+  renderResults();
+}
+
+// ---------- results ----------
+function hist(h, color){
+  const W = 360, H = 130, pb = 26, n = h.length, bw = W / n, max = Math.max(1, ...h);
+  let s = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Count by hits out of 10">';
+  const tx = 9*bw + 4 + (bw-8)/2;
+  s += '<line x1="'+tx+'" x2="'+tx+'" y1="2" y2="'+(H-pb)+'" stroke="#37352f" stroke-width="1.5" stroke-dasharray="4 3"/>';
+  h.forEach((c,i) => {
+    const bh = (H-pb-22) * c / max, x = i*bw + 4;
+    if(c) s += '<rect x="'+x+'" y="'+(H-pb-bh)+'" width="'+(bw-8)+'" height="'+bh+'" rx="2" fill="'+color+'"/><text x="'+(x+(bw-8)/2)+'" y="'+(H-pb-bh-4)+'" text-anchor="middle" font-size="19" font-weight="600" fill="#37352f" stroke="#fff" stroke-width="4" paint-order="stroke">'+c+'</text>';
+    s += '<text x="'+(x+(bw-8)/2)+'" y="'+(H-5)+'" text-anchor="middle" font-size="18" fill="#6f6e69">'+i+'</text>';
+  });
+  return s + '</svg>';
+}
+function card(cls, title, unit, a, cap){
+  const n = S.A.nItems;
+  return '<section class="col '+cls+'"><div><span class="tag '+cls+'">'+title+'</span> <span class="muted small">'+a.n+' '+unit+'</span>' +
+    '<p class="cap">'+cap+'</p>' +
+    '<div class="big">'+pct(a.rate)+'</div>' +
+    '<div class="small muted">'+(isFinite(a.meanHits)?a.meanHits.toFixed(1):'–')+' of '+n+' on average</div></div>' +
+    '<div>'+hist(a.hist, COLORS[cls])+'</div></section>';
+}
+function renderResults(){
+  const A = S.A;
+  $('#cards').innerHTML =
+    card('n','Individuals','people',A.agg.ind,'Everyone who answered the individual survey.') +
+    (A.hasSubs ? card('t','Teams','teams',A.agg.subTeams,'Each team\'s submission on the team survey, scored on the interval the team submitted.') : noTeams()) +
+    card('s','Statisticized teams','teams',A.agg.stat,'Built from individual answers: uses the lowest low and highest high across each team\'s members.');
+  renderStandings(); renderTables();
+}
+function noTeams(){ return '<section class="col t"><span class="tag t">Teams</span><p class="muted" style="margin-top:12px">No team survey file loaded, so there are no team results.</p></section>'; }
+
+const pts = p => String(Number(p.toFixed(2)));
+const teamList = a => a.map(t => 'Team '+esc(t)).join(', ');
+function winnerCard(c){
+  const line = t => '<p class="small muted" style="margin:6px 0 0">'+t+'</p>';
+  const names = c.groupNames ? '<p class="names">'+esc(c.groupNames)+'</p>' : line('Names not given.');
+  return '<div class="team">Team '+esc(c.team)+'</div><div class="muted">'+c.hits+' of '+S.A.nItems+' hits</div>'+names;
+}
+function previewAlert(){
+  const which = CE.previewMismatch(S.flags, S.flags2);
+  return which ? 'The '+which+' file has only preview or test responses' : '';
+}
+function renderStandings(){
+  const A = S.A, st = A.standings, box = $('#standings'), win = $('#winner'), pa = previewAlert(), pn = $('#previewNote');
+  pn.hidden = !pa; pn.textContent = pa; win.innerHTML = '';
+  if(!A.hasSubs){ box.innerHTML = '<p class="muted">No team survey file loaded, so there are no standings. Add it on the setup page.</p>'; return; }
+  if(!st.ranked.length){ box.innerHTML = '<p class="muted">No team submissions with answers in the team survey file.</p>'; return; }
+  const tb = st.tb, joint = st.winners.length > 1, n = A.nItems;
+  let note = '';
+  if(tb){
+    note = '<p style="margin:10px 0 0"><strong>'+(joint ? 'Still tied after the tiebreaker: joint winners.' : 'Won the tiebreaker: narrower intervals.')+'</strong> '+
+      st.tied.map(t => 'Team '+esc(t)+': '+pts(tb.points[t])+(tb.points[t]===1?' point':' points')).join(', ')+'.</p>';
+  }
+  win.innerHTML = '<div class="win"><span class="tag t" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to 9 of 10</span>'+
+    '<div class="winners">'+st.cards.map(c => '<div>'+winnerCard(c)+'</div>').join('')+'</div>'+note+'</div>';
+  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to 9 hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Team</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
+    st.ranked.map(r => '<tr><td>'+r.rank+'</td><td>Team '+esc(r.team)+'</td><td class="r">'+r.hits+'</td>'+(tb?'<td class="r">'+(r.points===null?'–':pts(r.points))+'</td>':'')+'</tr>').join('')+'</tbody></table>';
+  if(tb){
+    html += '<details><summary>How the tie was broken</summary><div>'+
+      '<p class="small muted">One point per question. Among tied teams that hit the question, the narrowest interval gets the point; equal widths share it. Cells show interval width.</p>'+
+      '<table><thead><tr><th>#</th>'+st.tied.map(t => '<th class="r">Team '+esc(t)+'</th>').join('')+'<th>Point</th></tr></thead><tbody>'+
+      tb.items.map(it => '<tr><td class="muted">'+it.q+'</td>'+st.tied.map(t => { const w = it.widths[t]; return '<td class="r">'+(w===undefined ? '<span class="muted">miss</span>' : it.winners.includes(t) ? '<strong>'+CE.fmt(w)+'</strong>' : CE.fmt(w))+'</td>'; }).join('')+
+        '<td>'+(!it.winners.length ? '<span class="muted">Unallocated</span>' : it.winners.length===1 ? 'Team '+esc(it.winners[0]) : 'Shared: '+teamList(it.winners))+'</td></tr>').join('')+
+      '</tbody></table></div></details>';
+  }
+  box.innerHTML = html;
+}
+function renderTables(){
+  const A = S.A, sub = A.hasSubs ? A.agg.subTeams : null;
+  $('#qtable').innerHTML = '<table><thead><tr><th>#</th><th>Question</th><th class="r">Individuals</th><th class="r">Teams</th><th class="r">Statisticized</th></tr></thead><tbody>' +
+    S.key.map((k,i) => '<tr><td class="muted">'+(i+1)+'</td><td>'+esc(k.label)+'</td><td class="r">'+pct(A.agg.ind.perItem[i].rate)+'</td><td class="r">'+(sub ? pct(sub.perItem[i].rate) : '–')+'</td><td class="r">'+pct(A.agg.stat.perItem[i].rate)+'</td></tr>').join('') + '</tbody></table>';
+}
+$('#keyList').addEventListener('focusout', () => { if(S.keyWasMissing && !keyMissing().length){ $('#keyDetails').open = false; S.keyWasMissing = false; } });
+
+// ---------- start ----------
+const k0 = keyFromWindow();
+if(k0) S.key = k0;
+renderKey();
+const p = new URLSearchParams(location.search);
+if(p.get('demo')){ loadDemo(); if(p.get('phase2') === '0') clearPhase2(DROP); compute(); show('results'); }
+})();
+</script>
+</body>
+</html>
