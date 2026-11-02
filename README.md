@@ -69,10 +69,6 @@ Nothing is uploaded. The Qualtrics exports contain students' first names, so kee
 - `tools/test.js`: checks the scoring (`node tools/test.js`)
 - `CLAUDE.md`: instructions for Claude
 
-## Citation
-
-Soll, J. B., & Klayman, J. (2004). Overconfidence in interval estimates. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 30*(2), 299-314. https://doi.org/10.1037/0278-7393.30.2.299
-
 ## License
 
 MIT. See `LICENSE`.
