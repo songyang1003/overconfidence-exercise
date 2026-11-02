@@ -17,21 +17,11 @@ The winner sections stay collapsed until you click them. You can show the graphs
 
 ## Change the questions
 
-The questions appear in three places: the individual survey, the team survey, and the answer key (`answer_key.js`). They must be in the same order in all three. Question 1 is scored against answer 1, question 2 against answer 2, and so on. The script below keeps the order for you.
+The questions appear in three places: the individual survey, the team survey, and the answer key (`answer_key.js`). They must be in the same order in all three. Question 1 is scored against answer 1, question 2 against answer 2, and so on.
 
-**With the script.** This needs Python 3. Copy `questions.example.csv` to `questions.csv`. Replace the rows with your own questions and answers, in the order students should see them. Open Terminal (Mac) or Command Prompt (Windows), go to the unzipped folder, and run:
+To change them, open the folder in Claude Code, Cowork in the Claude desktop app, or Codex, and paste your questions and answers in order. Put units in the question ("in millions") and give the answer in those units. You can use more or fewer than 10 questions. The included `CLAUDE.md` tells the assistant to update both surveys and the answer key, check the result, and keep the answers off GitHub. Claude reads it on its own. In Codex, first ask it to follow `CLAUDE.md`.
 
-```
-python3 tools/set_questions.py questions.csv
-```
-
-On Windows, type `python` instead of `python3`. The script rewrites both surveys and the answer key. Put units in the question ("in millions") and give the answer in those units. Put quotes around any cell that contains a comma. You can use more or fewer than 10 questions.
-
-**With Claude.** If you use Claude Code or Cowork in the Claude desktop app, open the folder and paste your questions and answers in order. The included `CLAUDE.md` tells Claude to run the script, check the result, and keep the answers off GitHub.
-
-**By hand.** You can edit the questions in Qualtrics and type the answers under **Details** on the results page. Keep the same order in both surveys.
-
-After any change, import the two updated `.qsf` files into Qualtrics. The script does not touch the worksheets, so edit the question table in both Word files to match.
+After any change, import the two updated `.qsf` files into Qualtrics. The worksheets are not updated, so edit the question table in both Word files to match.
 
 The included surveys hold the questions from our 2026 Duke class. Questions 6, 7, 8, and 10 are tied to that class or year. Replace or update them before you use the surveys elsewhere.
 
