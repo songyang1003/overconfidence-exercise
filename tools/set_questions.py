@@ -12,7 +12,7 @@ import csv, html, json, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SURVEYS = [ROOT / "surveys" / "individual_survey_example.qsf", ROOT / "surveys" / "team_survey_example.qsf"]
+SURVEYS = [ROOT / "surveys" / "individual_survey.qsf", ROOT / "surveys" / "team_survey.qsf"]
 KEY = ROOT / "answer_key.js"
 
 

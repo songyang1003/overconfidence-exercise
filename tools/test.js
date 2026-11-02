@@ -1,4 +1,4 @@
-const CE = require('./core.js');
+const CE = require('../core.js');
 const assert = require('assert');
 const fs = require('fs');
 let pass = 0; const ok = (c, m) => { assert(c, m); pass++; };
@@ -371,8 +371,8 @@ b = CE.buildRespondents(q.records.filter(r => r.DistributionChannel === 'preview
 }
 
 // mock files load through the real upload path (local only, gitignored)
-['mock_phase1.local.csv', 'mock_phase2.local.csv'].every(f => fs.existsSync(__dirname + '/' + f)) && (() => {
-  const q1 = CE.readQualtrics(fs.readFileSync(__dirname + '/mock_phase1.local.csv', 'utf8')), q2 = CE.readQualtrics(fs.readFileSync(__dirname + '/mock_phase2.local.csv', 'utf8'));
+['mock_phase1.local.csv', 'mock_phase2.local.csv'].every(f => fs.existsSync(__dirname + '/../' + f)) && (() => {
+  const q1 = CE.readQualtrics(fs.readFileSync(__dirname + '/../mock_phase1.local.csv', 'utf8')), q2 = CE.readQualtrics(fs.readFileSync(__dirname + '/../mock_phase2.local.csv', 'utf8'));
   ok(CE.checkPhase1(q1) === '' && CE.checkPhase2(q2) === '' && q1.nItems === 10 && q2.nItems === 10, 'mock files pass the upload checks');
   ok(q1.header.includes('IPAddress') && q2.header.includes('LocationLatitude'), 'mock files keep the Qualtrics layout');
   const b1 = CE.buildRespondents(q1.records, 10, {}), b2 = CE.buildTeamSubs(q2.records, 10, {});
