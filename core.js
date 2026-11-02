@@ -227,8 +227,9 @@
   const close = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b));
 
   // ---------- team standings ----------
-  // 9 is best; at equal distance from 9 the score below 9 wins: 9, 8, 10, 7, 6, ...
-  const rankKey = hits => Math.abs(hits - 9) * 2 + (hits > 9 ? 1 : 0);
+  // Target is 90% of the questions (9 of 10). Closest wins; at equal distance the score below wins: 9, 8, 10, 7, 6, ...
+  const target = n => n * 9 / 10;
+  const rankKey = (hits, n = 10) => { const t = target(n); return Math.round(Math.abs(hits - t) * 1000) * 2 + (hits > t ? 1 : 0); };
 
   function tiebreak(teams, truth) {
     const scored = teams.map(t => ({ team: t.team, s: scoreEst(t.ests, truth) }));
@@ -247,7 +248,7 @@
   }
 
   function standings(units, truth) {
-    const list = units.filter(u => u.s.answered > 0).sort((a, b) => rankKey(a.s.hits) - rankKey(b.s.hits) || byNum(a, b));
+    const list = units.filter(u => u.s.answered > 0).sort((a, b) => rankKey(a.s.hits, truth.length) - rankKey(b.s.hits, truth.length) || byNum(a, b));
     if (!list.length) return { ranked: [], winners: [], tied: [], tb: null };
     const tied = list.filter(u => u.s.hits === list[0].s.hits), rest = list.slice(tied.length);
     const tb = tied.length > 1 ? tiebreak(tied, truth) : null;
@@ -452,5 +453,5 @@
   }
 
   return { parseCSV, toCSV, readQualtrics, normTeam, normId, num, rowKind, perTeam, checkPhase1, checkPhase2, fileAction, keyForUpload, keyToSave, slotClash, previewMismatch, nameColumn, namePartColumns, parseTime, NO_NAME, buildRespondents,
-    scoreEst, statTeam, analyze, summarize, buildTeamSubs, rankKey, tiebreak, standings, indStandings, median, extremeEntries, fmt, mean, DEMO_KEY, withSd, demoCSV, demoPhase2CSV };
+    scoreEst, statTeam, analyze, summarize, buildTeamSubs, target, rankKey, tiebreak, standings, indStandings, median, extremeEntries, fmt, mean, DEMO_KEY, withSd, demoCSV, demoPhase2CSV };
 });

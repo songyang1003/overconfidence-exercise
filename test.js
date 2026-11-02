@@ -244,6 +244,14 @@ b = CE.buildRespondents(q.records.filter(r => r.DistributionChannel === 'preview
   ok(st.winners[0] === '3' && st.tb === null, 'no tiebreak without a tie at the top');
   const noTop = CE.standings([mk('1', 7), mk('2', 7), mk('3', 8), mk('4', 8)].slice(0, 2).concat(mk('5', 9)), new Array(10).fill(1));
   ok(noTop.tb === null && noTop.winners[0] === '5', 'tie below the top does not run the tiebreak');
+  const by = (n, order) => order.slice(1).forEach((h, i) => ok(CE.rankKey(order[i], n) < CE.rankKey(h, n), n + ' items: ' + order[i] + ' beats ' + h));
+  by(12, [11, 10, 12, 9, 8]);
+  by(5, [4, 5, 3, 2]);
+  by(4, [4, 3, 2]);
+  by(20, [18, 17, 19, 16, 20]);
+  const mk12 = (team, hits) => unit(team, Array.from({ length: 12 }, (_, i) => i < hits ? [0, 1, 2] : [5, 6, 7]), new Array(12).fill(1));
+  const st12 = CE.standings([mk12('1', 12), mk12('2', 9), mk12('3', 11), mk12('4', 10)], new Array(12).fill(1));
+  ok(st12.ranked.map(r => r.team).join() === '3,4,1,2', 'standings use 90% of 12 items');
 }
 
 // tiebreak

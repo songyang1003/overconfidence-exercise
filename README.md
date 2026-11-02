@@ -1,86 +1,108 @@
-# Confidence exercise: results page
+# Overconfidence exercise
 
-A single-page, browser-only tool for a class exercise on interval overconfidence (after Soll & Klayman, 2004). Students give 5th, 50th, and 95th percentile estimates for 10 questions; this page scores them and shows three groups side by side (individuals, teams, statisticized teams), then the team standings and the winning team.
+This is a results page for a class exercise on overconfidence in interval estimates. Students answer 10 questions with a 5th, 50th, and 95th percentile estimate, first on their own and then in teams. The page scores both surveys and shows how often the true answer fell inside each range. It also names a winning team and a winning individual.
 
-## Quick start (running it in your own class)
+Everything runs in the browser. Nothing is uploaded, and the page works offline.
 
-1. **Get the files.** On GitHub, click **Code > Download ZIP** and unzip.
-2. **Set up the surveys.** In Qualtrics, **Create a project > Survey > From a file**, once with `surveys/individual_survey_example.qsf` and once with `surveys/team_survey_example.qsf`. To change the questions, edit the rows of the `est` matrix in both surveys. Keep the export tags `team_num`, `ind_name`, `group_names`, and `est`, since the page looks for them.
-3. **Enter the answers.** Copy `answer_key.example.js` to `answer_key.js` and list your questions and answers in the same order as the survey rows. You can also type the answers under **Details** on the results page.
-4. **Rehearse.** Open `index.html?demo=1` to see the results page with made-up data.
-5. **In class.** Students take the individual survey alone, then form teams and one member per team submits the team survey. Everyone uses the same team number in both.
-6. **Score.** Export each survey as CSV (**Data & Analysis > Export & Import > Export Data**), open `index.html`, load the two files, and click **Show results**.
+The exercise was designed by Jack Soll, and the interval measures follow Soll and Klayman (2004). See [Citation](#citation).
 
-## Use
+## Run it in your own class
 
-1. Open `index.html` in a browser (double-click works; no server or internet needed).
-2. **Individual survey file:** drop in the Qualtrics CSV (one row per student, with `team_num`, `ind_name` or `netID`, and `est_i_k` columns), or click **Use demo data**.
-3. **Team survey file (optional):** drop in the team CSV (one row per team, with `team_num` and `est_i_k` columns; `netID` and a name column are allowed), or click **Use demo data**. Without it the page still works, and the Teams card and standings say no file is loaded.
-4. **Show results.**
+1. Download the repo (on GitHub, **Code > Download ZIP**) and unzip it.
+2. Choose your questions and answers (see [Change the questions](#change-the-questions)).
+3. In Qualtrics, go to **Create a project > Survey > From a file** and import `surveys/individual_survey_example.qsf`. Do the same for `surveys/team_survey_example.qsf`. Preview each survey once.
+4. Open `index.html?demo=1` in a browser to see the results page with made-up data.
+5. In class, students take the individual survey on their own. Then they form teams, and one person per team submits the team survey. Everyone on a team types the same team number in both surveys.
+6. Export each survey as a CSV from Qualtrics (**Data & Analysis > Export & Import > Export Data**, default labels). Open `index.html`, load the individual file and then the team file, and click **Show results**.
 
-A file missing the required columns is rejected with a message, and any file already loaded stays loaded. A file with a suspicious shape shows a warning and a **Load anyway** button: about one row per team in step 1 (1.5 rows per team or fewer, across 3 or more teams), or more than about two rows per team in step 2. In step 2 the latest row per team is kept.
+## Change the questions
 
-Demo and real data never mix. Loading a real file removes demo data from the other step, and clicking **Use demo data** removes a real file from the other step, each with a notice. Re-uploading a file keeps answers typed into the key unless the number of questions changes. If the demo replaced the key, the real key, including typed edits, comes back on the next real upload.
+The questions have to match in three places: the `est` matrix in each of the two surveys and the answer key in `answer_key.js`. Row 1 of the matrix is scored against answer 1, row 2 against answer 2, and so on. The script below keeps them in the same order, so you never have to edit the survey files by hand.
 
-A preview-only file still loads for rehearsal. If one file has only preview or test responses and the other has live responses, a red alert appears at the top of the results page.
+**With a script.** Copy `questions.example.csv` to `questions.csv` and replace the rows with your own questions and answers. Then run:
 
-The "Include preview and test responses" box applies to both files. Loaded files are not kept if you reload the page.
+```
+python3 tools/set_questions.py questions.csv
+```
 
-To see the demo straight away, open `index.html?demo=1`. Add `&phase2=0` to see the page with no team file. The demo has a tie at the top, so the tiebreak display shows.
+This rewrites both survey files and `answer_key.js`. You can use any number of questions. The page reads the count from the key, and the winning target becomes 90% of it (9 of 10, 10.8 of 12). Write units into the question ("in millions") and give the answer in the same units. Put quotes around any cell that contains a comma, such as `"384,400"`.
+
+**With Claude.** Open the folder in Claude (Cowork or Claude Code) and paste your questions and answers in order, for example: "Replace the questions with these 10 and their answers." The repo includes a `CLAUDE.md` file that tells Claude to run the script above, check the result, and keep the answers out of GitHub. Then import the two updated `.qsf` files into Qualtrics.
+
+**By hand.** You can also edit the matrix rows in Qualtrics and type the answers under **Details** on the results page. If you do, keep the same order in both surveys.
+
+The example surveys contain the questions from our 2026 class. A few of them are tied to that class and year: question 6 (Tour de France 2026), questions 7 and 8 (2025 figures), and question 10 (alumni of the Duke Fuqua MQM program). Replace or update these before using the surveys elsewhere.
+
+Do not rename the survey export tags `team_num`, `ind_name`, `group_names`, or `est`. The page looks for them.
+
+## What the surveys ask
+
+The individual survey asks for a team number, a first name (`ind_name`), and the 10-row `est` matrix. The team survey asks for a team number, the members' first names (`group_names`), and the same matrix. Neither file contains answers. Their survey and owner IDs are placeholders.
+
+## Loading files
+
+The page rejects a file that is missing the required columns and keeps whatever was loaded before. It asks before loading a file whose shape looks wrong. In the individual slot, that means about one row per team (1.5 or fewer rows per team across at least 3 teams). In the team slot, it means more than about two rows per team.
+
+Demo data and real data never mix. Loading a real file clears the demo from the other slot, and clicking **Use demo data** clears a real file from the other slot. A message says so each time. Answers typed into the key survive a re-upload unless the number of questions changes.
+
+Qualtrics preview and test responses are left out unless you tick **Include preview and test responses**. A file with only previews still loads, which is handy for a rehearsal. If one file has only previews and the other has live responses, a red alert appears on the results page.
+
+Files are not saved. Reloading the page clears them. To see the page without a team file, open `index.html?demo=1&phase2=0`.
 
 ## Results page
 
-- **Individuals:** every respondent to the individual survey with at least one answer, including people with no team number.
-- **Teams:** team survey submissions, scored on the interval the team submitted.
-- **Statisticized teams:** built per team number from the individual survey, with no discussion.
-- **Team standings:** every team that submitted, in rank order, with the winner and the names the team typed in the team survey (`group_names`).
-- **Team winner:** a collapsed row at the top, from the team survey only. Click it to open the winner card, standings, and tiebreak; it closes again each time you click Show results.
-- **Individual winner:** a second collapsed row, from the individual survey only, with the same rules. It shows the winner's first name and team number, the top five (or everyone tied at the top, if more), and the tiebreak, not the whole class. If the winner's name and team number appear more than once, a red note says to check before awarding.
-- **Graphs:** three side by side (Individuals, Teams, Statisticized teams).
-- **Details:** answer key and hit rate by question.
+The page shows three graphs side by side:
 
-## Data collection
+- Individuals: everyone in the individual survey who answered at least one question, including people with no team number.
+- Teams: each team's submission in the team survey, scored on the range the team agreed on.
+- Statisticized teams: built from each team's members in the individual survey, with no discussion. For each question, the low end is the lowest 5th among members and the high end is the highest 95th.
 
-Participants' data are collected with two Qualtrics surveys, one for individuals and one for teams. Example survey files are in `surveys/`; import them into Qualtrics with **Create a project > Survey > From a file**. Each survey asks for a team number, a name field (`ind_name` or `group_names`), and a 10-row text-entry matrix `est` with 5th, 50th, and 95th percentile columns. Survey IDs and owner IDs in these files are placeholders. Answers are not included in the survey files or in this repository.
+Above the graphs are two collapsed rows, Team winner and Individual winner. Each opens to the winner, the standings, and the tiebreak if one was needed. They close again each time you click **Show results**, so you can project the graphs before revealing the winners. The individual standings list only the top five (more if more people are tied at the top), so the whole class's scores are not projected. If the winning name and team number appear more than once in the individual survey, a red note asks you to check before awarding a prize.
 
-To analyze a session, export each survey from Qualtrics (**Data & Analysis > Export & Import > Export Data > CSV**) and load both files on the setup page. Keep real participant exports out of version control.
+**Details** shows the answer key, which you can edit, and the hit rate for each question. The results stay hidden until every question has an answer.
 
 ## Scoring
 
-- Hit: the true answer is inside [5th, 95th], endpoints included. A question left blank counts as a miss.
-- Hits out of 10: per person, team, or statisticized team. A unit with no answers at all is left out. An answer needs both a 5th and a 95th.
-- Statisticized team, per question: low is the lowest 5th among members, high is the highest 95th among members, and mid is the mean of members' 50ths. Only members with a complete, correctly ordered 5th/50th/95th on that question are used.
-- Team: if a team submitted more than once, by the same person or by different members, the most recent submission is kept.
-- Repeats (NetID in the individual file, team in the team file): an all-blank row never replaces a row with answers. Otherwise the later date wins, and if dates cannot be told apart, the later row in the file.
-- Team numbers: `3`, `03`, `T3`, `#3`, `3.`, `3.0`, `Team 3`, and `Team-3` all mean team 3.
-- A calibrated 90% interval should capture the answer on about 9 of 10 questions.
+A hit means the true answer is inside the range from the 5th to the 95th percentile, endpoints included. A blank question counts as a miss, and a range needs both a 5th and a 95th. A person or team that left every question blank is left out.
+
+For statisticized teams, the middle estimate is the mean of members' 50th percentiles. Only members with a complete, correctly ordered 5th/50th/95th on that question count toward it.
+
+If a team submitted the team survey more than once, the latest submission counts. An all-blank row never replaces one with answers. When dates tie, the later row in the file wins.
+
+Team numbers are read loosely: `3`, `03`, `T3`, `#3`, `3.`, `3.0`, `Team 3`, and `Team-3` all count as team 3.
 
 ## Winner
 
-Teams, and separately individuals, are ranked by closeness to 9 hits, not by most hits. At equal distance, the score below 9 wins: 9, 8, 10, 7, 6, 5, and so on.
+A well-calibrated 90% range should catch the answer on about 9 of 10 questions. So teams are ranked by how close they come to 90% of the questions, not by the most hits. With 10 questions the order is 9, 8, 10, 7, 6, 5, and so on. When two scores are the same distance from the target, the lower one wins. Individuals are ranked the same way, separately.
 
-The rules below are written for teams; individuals follow the same rules. The tiebreaker runs only if two or more teams share the top hit count. One point per question: among the tied teams that hit the question (endpoints included), the narrowest interval (95th minus 5th) gets the point, equal widths share it, and if no tied team hit the question the point is unallocated. The most points wins; a remaining tie gives joint winners. Widths and totals are compared with a small relative tolerance so floating-point noise cannot decide a winner.
+The tiebreaker runs only when two or more teams share the top score. Each question is worth one point. Among the tied teams that hit it, the team with the narrowest range (95th minus 5th) gets the point. Equal widths split the point. If no tied team hit the question, nobody gets it. The team with the most points wins, and a tie that remains gives joint winners. Widths and points are compared with a small tolerance so rounding cannot decide the result.
 
 ## Privacy
 
-Nothing is uploaded and the page makes no network requests. NetIDs are never shown on screen; the page shows names only, and a missing name appears as "(name not given)". If no names were collected, the winner card says "Names not collected" once. A name that merely repeats the person's NetID is treated as missing. The individuals export contains NetIDs and names, so keep it private. The team exports contain neither.
+The page makes no network requests. It shows first names, never NetIDs, and a missing name appears as "(name not given)". The winner card shows `group_names` exactly as the team typed it. Both exports contain names, so keep them private and out of version control.
 
-The winner card shows `group_names` from the team survey, exactly as the team typed it.
+## The answer key stays private
 
-## Answer key (keep it private)
-
-The real answers live in `answer_key.js`, which is listed in `.gitignore` so it is never published, along with `*.local.csv` (mock exports). Copy `answer_key.example.js` to `answer_key.js` and fill in your own items. The key is shown, and editable, under Details on the results page. If an answer is missing the results are hidden until you fill it in. The demo uses the questions from `answer_key.js` when it exists, and generic trivia otherwise.
+`answer_key.js` and `questions.csv` hold the real answers. Both are in `.gitignore`, along with `*.local.csv` (mock exports), so they are never published. If `answer_key.js` is missing, the demo uses generic trivia questions instead.
 
 ## Files
 
-- `index.html`: the interface
+- `index.html`: the page
 - `core.js`: parsing, scoring, standings, and the demo (also runs in Node)
-- `test.js`: `node test.js` runs the checks (optionally `CE_SAMPLE_CSV=/path/to/export.csv` to check a real export parses)
-- `answer_key.example.js`: template for the private key
-- `mock_phase1.local.csv`, `mock_phase2.local.csv`: synthetic files in the real Qualtrics layout, for trying the upload path
+- `test.js`: run `node test.js` to check the scoring. Add `CE_SAMPLE_CSV=/path/to/export.csv` to check that a real export parses.
+- `tools/set_questions.py`: writes one list of questions into both surveys and the answer key
+- `questions.example.csv`: a template for `questions.csv`
+- `answer_key.example.js`: a template for `answer_key.js`
+- `surveys/`: the two Qualtrics surveys
+- `CLAUDE.md`: instructions for Claude when it edits this repo
+- `CITATION.cff`, `LICENSE`
 
 ## Citation
 
-Exercise design by Jack Soll. The 5th/50th/95th elicitation and hit-rate scoring follow:
-
 Soll, J. B., & Klayman, J. (2004). Overconfidence in interval estimates. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 30*(2), 299-314. https://doi.org/10.1037/0278-7393.30.2.299
+
+To cite this tool, use the **Cite this repository** button on GitHub.
+
+## License
+
+MIT. See `LICENSE`.

@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this tool, please cite it and the paper it builds on."
+title: "Overconfidence exercise: a results page for interval estimates in class"
+type: software
+authors:
+  - family-names: Zhang
+    given-names: Songyang
+license: MIT
+repository-code: "https://github.com/songyang1003/overconfidence-exercise"
+date-released: 2026-11-02
+references:
+  - type: article
+    title: "Overconfidence in interval estimates"
+    authors:
+      - family-names: Soll
+        given-names: Jack B.
+      - family-names: Klayman
+        given-names: Joshua
+    journal: "Journal of Experimental Psychology: Learning, Memory, and Cognition"
+    year: 2004
+    volume: 30
+    issue: 2
+    start: 299
+    end: 314
+    doi: 10.1037/0278-7393.30.2.299

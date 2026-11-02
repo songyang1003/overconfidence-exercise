@@ -130,7 +130,7 @@ svg text{font-family:inherit}
 
   <h1 style="margin-top:16px">Did the answer land inside our range?</h1>
   <div class="cols" id="cards"></div>
-  <p class="small muted" style="margin:10px 0 0">Bars show how many got each number of hits out of 10. Dashed line: 9, calibrated.</p>
+  <p class="small muted" style="margin:10px 0 0">Bars show how many got each number of hits. Dashed line: a calibrated 90% of questions.</p>
 
   </div>
 
@@ -259,8 +259,8 @@ function compute(){
 // ---------- results ----------
 function hist(h, color){
   const W = 360, H = 130, pb = 26, n = h.length, bw = W / n, max = Math.max(1, ...h);
-  let s = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Count by hits out of 10">';
-  const tx = 9*bw + 4 + (bw-8)/2;
+  let s = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Count by number of hits">';
+  const tx = CE.target(n-1)*bw + 4 + (bw-8)/2;
   s += '<line x1="'+tx+'" x2="'+tx+'" y1="2" y2="'+(H-pb)+'" stroke="#37352f" stroke-width="1.5" stroke-dasharray="4 3"/>';
   h.forEach((c,i) => {
     const bh = (H-pb-22) * c / max, x = i*bw + 4;
@@ -269,6 +269,7 @@ function hist(h, color){
   });
   return s + '</svg>';
 }
+const tgt = n => { const t = CE.target(n); return Number.isInteger(t) ? t : t.toFixed(1); };
 function card(cls, title, unit, a, cap){
   const n = S.A.nItems;
   return '<section class="col '+cls+'"><div><span class="tag '+cls+'">'+title+'</span> <span class="muted small">'+a.n+' '+unit+'</span>' +
@@ -308,9 +309,9 @@ function renderStandings(){
     note = '<p style="margin:10px 0 0"><strong>'+(joint ? 'Still tied after the tiebreaker: joint winners.' : 'Won the tiebreaker: narrower intervals.')+'</strong> '+
       st.tied.map(t => 'Team '+esc(t)+': '+pts(tb.points[t])+(tb.points[t]===1?' point':' points')).join(', ')+'.</p>';
   }
-  win.innerHTML = '<div class="win"><span class="tag t" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to 9 of 10</span>'+
+  win.innerHTML = '<div class="win"><span class="tag t" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to '+tgt(n)+' of '+n+'</span>'+
     '<div class="winners">'+st.cards.map(c => '<div>'+winnerCard(c)+'</div>').join('')+'</div>'+note+'</div>';
-  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to 9 hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Team</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
+  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to '+tgt(n)+' hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Team</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
     st.ranked.map(r => '<tr><td>'+r.rank+'</td><td>Team '+esc(r.team)+'</td><td class="r">'+r.hits+'</td>'+(tb?'<td class="r">'+(r.points===null?'–':pts(r.points))+'</td>':'')+'</tr>').join('')+'</tbody></table>';
   if(tb) html += tieTable(st, t => 'Team '+esc(t), 'teams');
   box.innerHTML = html;
@@ -334,10 +335,10 @@ function renderIndStandings(){
   if(tb) note = '<p style="margin:10px 0 0"><strong>'+(joint ? 'Still tied after the tiebreaker: joint winners.' : 'Won the tiebreaker: narrower intervals.')+'</strong> '+
     st.tied.length+' people tied on '+st.ranked[0].hits+' hits.</p>';
   const repeat = st.cards.filter(c => c.repeats > 1).map(c => '<p class="note">'+esc(c.name)+' on Team '+esc(c.team)+' appears '+c.repeats+' times in the individual survey. Check before awarding.</p>').join('');
-  win.innerHTML = '<div class="win ind"><span class="tag n" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to 9 of 10</span>'+
+  win.innerHTML = '<div class="win ind"><span class="tag n" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to '+tgt(n)+' of '+n+'</span>'+
     '<div class="winners">'+st.cards.map(c => '<div><div class="team">'+esc(c.name)+'</div><div class="muted">'+(c.team ? 'Team '+esc(c.team)+', ' : '')+c.hits+' of '+n+' hits</div></div>').join('')+'</div>'+note+repeat+'</div>';
   const shown = st.ranked.slice(0, Math.max(5, st.tied.length));
-  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to 9 hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Person</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
+  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to '+tgt(n)+' hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Person</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
     shown.map(r => '<tr><td>'+r.rank+'</td><td>'+who(r.team)+'</td><td class="r">'+r.hits+'</td>'+(tb?'<td class="r">'+(r.points===null?'–':pts(r.points))+'</td>':'')+'</tr>').join('')+'</tbody></table>';
   if(tb) html += tieTable(st, who, 'people');
   box.innerHTML = html;
