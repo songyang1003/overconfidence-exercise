@@ -261,6 +261,21 @@
     return { ranked, winners: tb ? tb.winners : [tied[0].team], tied: tied.map(u => u.team), tb };
   }
 
+  // Individual prize: same rules as teams, on individual survey answers. Units are keyed by row, since first names repeat.
+  function indStandings(scored, truth) {
+    const units = scored.map((r, i) => ({ team: String(i + 1), name: r.name || NO_NAME, home: r.team, ests: r.ests, s: r.s }));
+    const st = standings(units, truth);
+    const byId = new Map(units.map(u => [u.team, u]));
+    const sameEntry = u => units.filter(o => o.home === u.home && normId(o.name) === normId(u.name)).length;
+    st.people = {};
+    units.forEach(u => { st.people[u.team] = { name: u.name, team: u.home }; });
+    st.cards = st.winners.map(id => {
+      const u = byId.get(id);
+      return { id, name: u.name, team: u.home, hits: u.s.hits, repeats: u.name === NO_NAME ? 1 : sameEntry(u) };
+    });
+    return st;
+  }
+
   function median(a) {
     a = a.filter(x => isFinite(x)).sort((x, y) => x - y);
     if (!a.length) return NaN;
@@ -303,7 +318,7 @@
     const groups = { ind: scored, subTeams, stat };
     const agg = { ind: summarize(scored, nItems), stat: summarize(stat, nItems), subTeams: subTeams ? summarize(subTeams, nItems) : null };
     const subbed = new Set((subTeams || []).map(t => t.team));
-    return { scored, groups, agg, nItems, hasSubs: !!subTeams, standings: st,
+    return { scored, groups, agg, nItems, hasSubs: !!subTeams, standings: st, indStandings: indStandings(scored, truth),
       noTeam: scored.filter(r => !r.team).length,
       disordered: scored.filter(r => r.s.disordered > 0).length,
       namesMissing: scored.filter(r => !r.name).length,
@@ -437,5 +452,5 @@
   }
 
   return { parseCSV, toCSV, readQualtrics, normTeam, normId, num, rowKind, perTeam, checkPhase1, checkPhase2, fileAction, keyForUpload, keyToSave, slotClash, previewMismatch, nameColumn, namePartColumns, parseTime, NO_NAME, buildRespondents,
-    scoreEst, statTeam, analyze, summarize, buildTeamSubs, rankKey, tiebreak, standings, median, extremeEntries, fmt, mean, DEMO_KEY, withSd, demoCSV, demoPhase2CSV };
+    scoreEst, statTeam, analyze, summarize, buildTeamSubs, rankKey, tiebreak, standings, indStandings, median, extremeEntries, fmt, mean, DEMO_KEY, withSd, demoCSV, demoPhase2CSV };
 });

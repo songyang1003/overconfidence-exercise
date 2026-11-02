@@ -51,7 +51,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 
 .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 40px;margin-top:4px}
 .col{padding-top:6px}
-#winnerDetails>summary{font-size:1.35rem}
+details.prize>summary{font-size:1.35rem}
 .cap{font-size:.82rem;color:var(--muted);margin:6px 0 0;min-height:3em}
 .big{font-size:2.6rem;font-weight:700;line-height:1.05;letter-spacing:-.02em;margin:10px 0 0;font-variant-numeric:tabular-nums}
 .col.n .big{color:var(--n)} .col.t .big{color:var(--t)} .col.s .big{color:var(--s)}
@@ -62,6 +62,8 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 .win .names{margin:6px 0 0;font-size:1.1rem}
 .win .muted{font-size:1.1rem}
 .win .small.muted{font-size:.82rem}
+.win.ind{background:var(--n-bg)} .win.ind .team{color:var(--n)}
+.wide{overflow-x:auto}
 .note{color:var(--red);font-weight:600;font-size:.9rem;margin:10px 0 0}
 .note button{margin-left:8px;color:var(--ink);font-weight:500}
 .alert{color:var(--red);font-weight:600;margin:0 0 10px}
@@ -115,10 +117,15 @@ svg text{font-family:inherit}
   <div id="resultsBody">
 
   <p id="previewNote" class="alert" role="alert" hidden></p>
-  <details id="winnerDetails"><summary>Winner</summary><div>
+  <details id="winnerDetails" class="prize"><summary>Team winner</summary><div>
     <div id="winner"></div>
     <h2>Team standings</h2>
     <div id="standings"></div>
+  </div></details>
+  <details id="indDetails" class="prize"><summary>Individual winner</summary><div>
+    <div id="indWinner"></div>
+    <h2>Top individuals</h2>
+    <div id="indStandings"></div>
   </div></details>
 
   <h1 style="margin-top:16px">Did the answer land inside our range?</h1>
@@ -225,7 +232,7 @@ $('#goBtn').addEventListener('click', () => {
   if(!S.records){ fail('Load the individual survey file first (step 1).'); return; }
   compute();
   if(S.A && !S.A.agg.ind.n){ fail('No usable responses in the individual survey file.'); return; }
-  $('#winnerDetails').open = false; show('results');
+  $('#winnerDetails').open = false; $('#indDetails').open = false; show('results');
 });
 $('#backBtn').addEventListener('click', () => show('setup'));
 function show(which){ $('#setup').hidden = which !== 'setup'; $('#results').hidden = which !== 'results'; window.scrollTo(0,0); }
@@ -276,12 +283,11 @@ function renderResults(){
     card('n','Individuals','people',A.agg.ind,'Everyone who answered the individual survey.') +
     (A.hasSubs ? card('t','Teams','teams',A.agg.subTeams,'Each team\'s submission on the team survey, scored on the interval the team submitted.') : noTeams()) +
     card('s','Statisticized teams','teams',A.agg.stat,'Built from individual answers: uses the lowest low and highest high across each team\'s members.');
-  renderStandings(); renderTables();
+  renderStandings(); renderIndStandings(); renderTables();
 }
 function noTeams(){ return '<section class="col t"><span class="tag t">Teams</span><p class="muted" style="margin-top:12px">No team survey file loaded, so there are no team results.</p></section>'; }
 
 const pts = p => String(Number(p.toFixed(2)));
-const teamList = a => a.map(t => 'Team '+esc(t)).join(', ');
 function winnerCard(c){
   const line = t => '<p class="small muted" style="margin:6px 0 0">'+t+'</p>';
   const names = c.groupNames ? '<p class="names">'+esc(c.groupNames)+'</p>' : line('Names not given.');
@@ -306,14 +312,34 @@ function renderStandings(){
     '<div class="winners">'+st.cards.map(c => '<div>'+winnerCard(c)+'</div>').join('')+'</div>'+note+'</div>';
   let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to 9 hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Team</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
     st.ranked.map(r => '<tr><td>'+r.rank+'</td><td>Team '+esc(r.team)+'</td><td class="r">'+r.hits+'</td>'+(tb?'<td class="r">'+(r.points===null?'–':pts(r.points))+'</td>':'')+'</tr>').join('')+'</tbody></table>';
-  if(tb){
-    html += '<details><summary>How the tie was broken</summary><div>'+
-      '<p class="small muted">One point per question. Among tied teams that hit the question, the narrowest interval gets the point; equal widths share it. Cells show interval width.</p>'+
-      '<table><thead><tr><th>#</th>'+st.tied.map(t => '<th class="r">Team '+esc(t)+'</th>').join('')+'<th>Point</th></tr></thead><tbody>'+
-      tb.items.map(it => '<tr><td class="muted">'+it.q+'</td>'+st.tied.map(t => { const w = it.widths[t]; return '<td class="r">'+(w===undefined ? '<span class="muted">miss</span>' : it.winners.includes(t) ? '<strong>'+CE.fmt(w)+'</strong>' : CE.fmt(w))+'</td>'; }).join('')+
-        '<td>'+(!it.winners.length ? '<span class="muted">Unallocated</span>' : it.winners.length===1 ? 'Team '+esc(it.winners[0]) : 'Shared: '+teamList(it.winners))+'</td></tr>').join('')+
-      '</tbody></table></div></details>';
-  }
+  if(tb) html += tieTable(st, t => 'Team '+esc(t), 'teams');
+  box.innerHTML = html;
+}
+function tieTable(st, label, unit){
+  const tb = st.tb, list = a => a.map(label).join(', ');
+  return '<details><summary>How the tie was broken</summary><div>'+
+    '<p class="small muted">One point per question. Among tied '+unit+' that hit the question, the narrowest interval gets the point; equal widths share it. Cells show interval width.</p>'+
+    '<div class="wide"><table><thead><tr><th>#</th>'+st.tied.map(t => '<th class="r">'+label(t)+'</th>').join('')+'<th>Point</th></tr></thead><tbody>'+
+    tb.items.map(it => '<tr><td class="muted">'+it.q+'</td>'+st.tied.map(t => { const w = it.widths[t]; return '<td class="r">'+(w===undefined ? '<span class="muted">miss</span>' : it.winners.includes(t) ? '<strong>'+CE.fmt(w)+'</strong>' : CE.fmt(w))+'</td>'; }).join('')+
+      '<td>'+(!it.winners.length ? '<span class="muted">Unallocated</span>' : it.winners.length===1 ? label(it.winners[0]) : 'Shared: '+list(it.winners))+'</td></tr>').join('')+
+    '</tbody></table></div></div></details>';
+}
+function renderIndStandings(){
+  const A = S.A, st = A.indStandings, box = $('#indStandings'), win = $('#indWinner'), n = A.nItems;
+  win.innerHTML = '';
+  if(!st.ranked.length){ box.innerHTML = '<p class="muted">No individual responses with answers.</p>'; return; }
+  const who = id => { const p = st.people[id]; return esc(p.name)+(p.team ? ' (Team '+esc(p.team)+')' : ' (no team number)'); };
+  const tb = st.tb, joint = st.winners.length > 1;
+  let note = '';
+  if(tb) note = '<p style="margin:10px 0 0"><strong>'+(joint ? 'Still tied after the tiebreaker: joint winners.' : 'Won the tiebreaker: narrower intervals.')+'</strong> '+
+    st.tied.length+' people tied on '+st.ranked[0].hits+' hits.</p>';
+  const repeat = st.cards.filter(c => c.repeats > 1).map(c => '<p class="note">'+esc(c.name)+' on Team '+esc(c.team)+' appears '+c.repeats+' times in the individual survey. Check before awarding.</p>').join('');
+  win.innerHTML = '<div class="win ind"><span class="tag n" style="background:#fff">'+(joint?'Joint winners':'Winner')+'</span> <span class="small muted">Closest to 9 of 10</span>'+
+    '<div class="winners">'+st.cards.map(c => '<div><div class="team">'+esc(c.name)+'</div><div class="muted">'+(c.team ? 'Team '+esc(c.team)+', ' : '')+c.hits+' of '+n+' hits</div></div>').join('')+'</div>'+note+repeat+'</div>';
+  const shown = st.ranked.slice(0, Math.max(5, st.tied.length));
+  let html = '<p class="muted" style="margin:0 0 4px">Ranked by closeness to 9 hits, not by most hits.</p><table><thead><tr><th>Rank</th><th>Person</th><th class="r">Inside the range (of '+n+')</th>'+(tb?'<th class="r">Tiebreak points</th>':'')+'</tr></thead><tbody>'+
+    shown.map(r => '<tr><td>'+r.rank+'</td><td>'+who(r.team)+'</td><td class="r">'+r.hits+'</td>'+(tb?'<td class="r">'+(r.points===null?'–':pts(r.points))+'</td>':'')+'</tr>').join('')+'</tbody></table>';
+  if(tb) html += tieTable(st, who, 'people');
   box.innerHTML = html;
 }
 function renderTables(){

@@ -323,6 +323,24 @@ b = CE.buildRespondents(q.records.filter(r => r.DistributionChannel === 'preview
   ok(A.standings.ranked.length === 2 && A.standings.cards.length === 1 && A.standings.cards[0].groupNames === 'Alice, Ben', 'winner card names come from group_names');
 }
 
+// individual prize
+{
+  const truth = [5, 5];
+  const row = (name, team, ests) => ({ name, team, ests, s: CE.scoreEst(ests, truth) });
+  const a = row('Ada', '1', [[4, 5, 6], [0, 5, 10]]), b = row('Ada', '2', [[0, 5, 10], [4.5, 5, 5.5]]), c = row('Bo', '1', [[0, 5, 10], [9, 9, 9]]);
+  let st = CE.indStandings([a, b, c], truth);
+  ok(st.tb && st.tied.length === 2 && st.winners.length === 2 && st.cards.map(x => x.team).join() === '1,2' && st.cards.every(x => x.repeats === 1), 'same first name on two teams stays two people, joint winners');
+  st = CE.indStandings([row('Bo', '1', [[0, 5, 10], [0, 5, 10]]), row('Cy', '3', [[4, 5, 6], [0, 5, 9]])], truth);
+  ok(st.winners.length === 1 && st.cards[0].name === 'Cy' && st.ranked[0].points === 2, 'tiebreak picks the narrower person');
+  st = CE.indStandings([row('Ada', '1', [[4, 5, 6], [4, 5, 6]]), row(' ada ', '1', [[0, 5, 10], [0, 5, 10]])], truth);
+  ok(st.cards[0].repeats === 2, 'same name and team twice is flagged');
+  st = CE.indStandings([row('', '', [[4, 5, 6], [4, 5, 6]])], truth);
+  ok(st.cards[0].name === CE.NO_NAME && st.cards[0].team === '' && st.cards[0].repeats === 1, 'missing name still shows');
+  ok(CE.indStandings([row('Ada', '1', [[NaN, NaN, NaN], [NaN, NaN, NaN]])], truth).ranked.length === 0, 'blank person is out of the prize');
+  const A = CE.analyze([{ team: '1', netid: '', name: 'Ada', ests: [[4, 5, 6], [4, 5, 6]] }], truth, null);
+  ok(!A.hasSubs && A.indStandings.cards[0].name === 'Ada', 'individual prize works with no team file');
+}
+
 // demo: three-group story and a real tie, with and without a real-looking key
 {
   const realish = [48, 3.1, 240, 6, 85, 3400, 280, 12.5, 1985, 1500].map((answer, i) => ({ label: 'Q' + (i + 1), answer }));

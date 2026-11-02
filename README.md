@@ -2,6 +2,15 @@
 
 A single-page, browser-only tool for a class exercise on interval overconfidence (after Soll & Klayman, 2004). Students give 5th, 50th, and 95th percentile estimates for 10 questions; this page scores them and shows three groups side by side (individuals, teams, statisticized teams), then the team standings and the winning team.
 
+## Quick start (running it in your own class)
+
+1. **Get the files.** On GitHub, click **Code > Download ZIP** and unzip.
+2. **Set up the surveys.** In Qualtrics, **Create a project > Survey > From a file**, once with `surveys/individual_survey_example.qsf` and once with `surveys/team_survey_example.qsf`. To change the questions, edit the rows of the `est` matrix in both surveys. Keep the export tags `team_num`, `ind_name`, `group_names`, and `est`, since the page looks for them.
+3. **Enter the answers.** Copy `answer_key.example.js` to `answer_key.js` and list your questions and answers in the same order as the survey rows. You can also type the answers under **Details** on the results page.
+4. **Rehearse.** Open `index.html?demo=1` to see the results page with made-up data.
+5. **In class.** Students take the individual survey alone, then form teams and one member per team submits the team survey. Everyone uses the same team number in both.
+6. **Score.** Export each survey as CSV (**Data & Analysis > Export & Import > Export Data**), open `index.html`, load the two files, and click **Show results**.
+
 ## Use
 
 1. Open `index.html` in a browser (double-click works; no server or internet needed).
@@ -25,7 +34,8 @@ To see the demo straight away, open `index.html?demo=1`. Add `&phase2=0` to see 
 - **Teams:** team survey submissions, scored on the interval the team submitted.
 - **Statisticized teams:** built per team number from the individual survey, with no discussion.
 - **Team standings:** every team that submitted, in rank order, with the winner and the names the team typed in the team survey (`group_names`).
-- **Winner:** a collapsed row at the top. Click it to open the winner card, standings, and tiebreak; it closes again each time you click Show results.
+- **Team winner:** a collapsed row at the top, from the team survey only. Click it to open the winner card, standings, and tiebreak; it closes again each time you click Show results.
+- **Individual winner:** a second collapsed row, from the individual survey only, with the same rules. It shows the winner's first name and team number, the top five (or everyone tied at the top, if more), and the tiebreak, not the whole class. If the winner's name and team number appear more than once, a red note says to check before awarding.
 - **Graphs:** three side by side (Individuals, Teams, Statisticized teams).
 - **Details:** answer key and hit rate by question.
 
@@ -47,9 +57,9 @@ To analyze a session, export each survey from Qualtrics (**Data & Analysis > Exp
 
 ## Winner
 
-Teams are ranked by closeness to 9 hits, not by most hits. At equal distance, the score below 9 wins: 9, 8, 10, 7, 6, 5, and so on.
+Teams, and separately individuals, are ranked by closeness to 9 hits, not by most hits. At equal distance, the score below 9 wins: 9, 8, 10, 7, 6, 5, and so on.
 
-The tiebreaker runs only if two or more teams share the top hit count. One point per question: among the tied teams that hit the question (endpoints included), the narrowest interval (95th minus 5th) gets the point, equal widths share it, and if no tied team hit the question the point is unallocated. The most points wins; a remaining tie gives joint winners. Widths and totals are compared with a small relative tolerance so floating-point noise cannot decide a winner.
+The rules below are written for teams; individuals follow the same rules. The tiebreaker runs only if two or more teams share the top hit count. One point per question: among the tied teams that hit the question (endpoints included), the narrowest interval (95th minus 5th) gets the point, equal widths share it, and if no tied team hit the question the point is unallocated. The most points wins; a remaining tie gives joint winners. Widths and totals are compared with a small relative tolerance so floating-point noise cannot decide a winner.
 
 ## Privacy
 
@@ -69,4 +79,8 @@ The real answers live in `answer_key.js`, which is listed in `.gitignore` so it 
 - `answer_key.example.js`: template for the private key
 - `mock_phase1.local.csv`, `mock_phase2.local.csv`: synthetic files in the real Qualtrics layout, for trying the upload path
 
-Exercise design after Jack Soll. Reference: Soll, J. B., & Klayman, J. (2004). Overconfidence in interval estimates. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 30*(2), 299-314.
+## Citation
+
+Exercise design by Jack Soll. The 5th/50th/95th elicitation and hit-rate scoring follow:
+
+Soll, J. B., & Klayman, J. (2004). Overconfidence in interval estimates. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 30*(2), 299-314. https://doi.org/10.1037/0278-7393.30.2.299
