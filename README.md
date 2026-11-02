@@ -10,7 +10,7 @@ The page works offline and uploads nothing.
 2. Set your questions and answers. See the next section. The download does not include answers, so you must add them before the page will show results.
 3. In Qualtrics, choose **Create a project > Survey > From a file** and import `surveys/individual_survey.qsf`. Do the same for `surveys/team_survey.qsf`. Preview each survey once.
 4. To see the page with made-up data, double-click `index.html`, click both **Use demo data** buttons, and click **Show results**.
-5. The surveys do not explain percentiles to students, so explain the 5th, 50th, and 95th percentiles in class. Then students take the individual survey alone. Then they form teams. One person per team submits the team survey. Everyone on a team enters the same team number in both surveys.
+5. In class, hand out the paper worksheets in `worksheets/`. The individual worksheet explains the 5th, 50th, and 95th percentiles, which the surveys do not. Tell students not to use ChatGPT, other AI tools, or the web. This is an offline exercise, and the answers should come from what students already know. Students fill in the individual worksheet alone and enter their answers in the individual survey. Then they form teams and fill in the team worksheet together. One person per team submits the team survey. Everyone on a team enters the same team number in both surveys.
 6. Export each survey as a CSV from Qualtrics (**Data & Analysis > Export & Import > Export Data**, default settings). Open `index.html`, load the individual file, then the team file, and click **Show results**.
 
 The winner sections stay collapsed until you click them. You can show the graphs first and reveal the winners when you are ready.
@@ -31,7 +31,7 @@ On Windows, type `python` instead of `python3`. The script rewrites both surveys
 
 **By hand.** You can edit the questions in Qualtrics and type the answers under **Details** on the results page. Keep the same order in both surveys.
 
-After any change, import the two updated `.qsf` files into Qualtrics.
+After any change, import the two updated `.qsf` files into Qualtrics. The script does not touch the worksheets, so edit the question table in both Word files to match.
 
 The included surveys hold the questions from our 2026 Duke class. Questions 6, 7, 8, and 10 are tied to that class or year. Replace or update them before you use the surveys elsewhere.
 
@@ -63,6 +63,7 @@ Nothing is uploaded. The Qualtrics exports contain students' first names, so kee
 - `core.js`: scoring and the demo data
 - `answer_key.js`: your answers (created by the script, not included in the download)
 - `surveys/`: the two Qualtrics surveys
+- `worksheets/`: the paper instructions and answer sheets for students
 - `tools/set_questions.py`: writes your questions into both surveys and the answer key
 - `questions.example.csv`: a template for `questions.csv`
 - `tools/test.js`: checks the scoring (`node tools/test.js`)
