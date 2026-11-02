@@ -2,9 +2,7 @@
 
 This is a results page for a class exercise on overconfidence. Students answer 10 questions. For each one they give a low guess (5th percentile), a best guess (50th), and a high guess (95th). They do this alone first and then in teams. The page shows how often the true answer fell inside each range and names a winning team and a winning individual.
 
-The page runs in your browser. It works offline and uploads nothing.
-
-Jack Soll designed the exercise. The interval measures follow Soll and Klayman (2004).
+The page works offline and uploads nothing.
 
 ## Run it in your class
 
@@ -73,8 +71,6 @@ Nothing is uploaded. The Qualtrics exports contain students' first names, so kee
 ## Citation
 
 Soll, J. B., & Klayman, J. (2004). Overconfidence in interval estimates. *Journal of Experimental Psychology: Learning, Memory, and Cognition, 30*(2), 299-314. https://doi.org/10.1037/0278-7393.30.2.299
-
-To cite this tool, use the **Cite this repository** button on GitHub.
 
 ## License
 
